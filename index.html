@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SMART SCALPER AI PRO</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #080d18;
+    color: white;
+    font-family: Arial, Tahoma, sans-serif;
+}
+
+header {
+    background: #111a2b;
+    padding: 22px;
+    border-bottom: 2px solid #d9ad35;
+}
+
+header h1 {
+    color: #f2c94c;
+    margin: 0;
+    font-size: 27px;
+}
+
+header p {
+    color: #9caac0;
+    margin-bottom: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 18px;
+}
+
+.card {
+    background: #121c2e;
+    border: 1px solid #26364f;
+    border-radius: 13px;
+    padding: 17px;
+    margin-bottom: 17px;
+}
+
+.title {
+    color: #f2c94c;
+    font-size: 19px;
+    margin-bottom: 15px;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.stat {
+    background: #1b2940;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stat small {
+    color: #aab6c9;
+}
+
+.stat h2 {
+    color: #f2c94c;
+    margin-bottom: 0;
+}
+
+button, select {
+    background: #d9ad35;
+    color: #111;
+    border: none;
+    padding: 11px 17px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 4px;
+}
+
+button.secondary {
+    background: #26364f;
+    color: white;
+}
+
+button:hover {
+    opacity: .85;
+}
+
+canvas {
+    width: 100%;
+    height: 330px;
+    background: #0b1424;
+    border-radius: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+th, td {
+    padding: 13px 7px;
+    border-bottom: 1px solid #26364f;
+}
+
+th {
+    color: #f2c94c;
+}
+
+td {
+    color: #dce4f0;
+}
+
+.green {
+    color: #43d6a0;
+}
+
+.red {
+    color: #ff6b76;
+}
+
+.yellow {
+    color: #f2c94c;
+}
+
+.result {
+    background: #1b2940;
+    border-radius: 10px;
+    padding: 15px;
+    line-height: 2;
+    margin-top: 12px;
+}
+
+.note {
+    color: #aab6c9;
+    line-height: 1.9;
+    font-size: 13px;
+}
+
+@media(max-width:700px) {
+    .dashboard {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    header h1 {
+        font-size: 22px;
+    }
+
+    th, td {
+        font-size: 12px;
+        padding: 10px 3px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>SMART SCALPER AI PRO</h1>
+    <p>Price Action Analysis Laboratory</p>
+</header>
+
+<div class="container">
+
+<div class="card">
+    <div class="title">لوحة المعلومات</div>
+
+    <div class="dashboard">
+
+        <div class="stat">
+            <small>عدد الشموع</small>
+            <h2 id="candles">60</h2>
+        </div>
+
+        <div class="stat">
+            <small>السعر الافتراضي</small>
+            <h2 id="price">100</h2>
+        </div>
+
+        <div class="stat">
+            <small>التذبذب</small>
+            <h2 id="volatility">--</h2>
+        </div>
+
+        <div class="stat">
+            <small>حالة السوق</small>
+            <h2 id="market">--</h2>
+        </div>
+
+    </div>
+</div>
+
+<div class="card">
+
+    <div class="title">محاكاة حركة السعر</div>
+
+    <button onclick="addCandles()">تحديث البيانات</button>
+
+    <button class="secondary" onclick="resetMarket()">
+        إعادة المحاكاة
+    </button>
+
+    <select id="scenario" onchange="resetMarket()">
+        <option value="normal">حركة عادية</option>
+        <option value="compression">ضغط سعري</option>
+        <option value="volatile">تذبذب مرتفع</option>
+    </select>
+
+    <br><br>
+
+    <canvas id="chart" width="1100" height="400"></canvas>
+
+</div>
+
+<div class="card">
+
+    <div class="title">محرك تحليل الأنماط</div>
+
+    <div id="analysis" class="result">
+        بانتظار تحليل البيانات...
+    </div>
+
+</div>
+
+<div class="card">
+
+    <div class="title">سجل التحليلات</div>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>الوقت</th>
+                <th>النمط</th>
+                <th>التصنيف</th>
+            </tr>
+        </thead>
+
+        <tbody id="history"></tbody>
+
+    </table>
+
+</div>
+
+<div class="card">
+
+    <div class="title">معلومات النظام</div>
+
+    <p class="note">
+        هذا البرنامج مختبر تعليمي ببيانات مصطنعة.
+        يقوم بتحليل التذبذب والضغط السعري والخروج من النطاق
+        والعودة إليه.
+
+        لا يتصل بمنصة MEXC ولا يعطي توصيات تداول
+        ولا ينفذ عمليات مالية.
+
+        نتائج المحاكاة لا تمثل نتائج سوق حقيقية.
+    </p>
+
+</div>
+
+</div>
+
+<script>
+
+let data = [];
+let history = [];
+
+const canvas = document.getElementById("chart");
+const ctx = canvas.getContext("2d");
+
+function random(min,max) {
+    return Math.random() * (max-min) + min;
+}
+
+function candle(previous, volatility) {
+
+    let open = previous;
+
+    let close = open + random(-volatility,volatility);
+
+    let high = Math.max(open,close) + random(0,volatility*.5);
+
+    let low = Math.min(open,close) - random(0,volatility*.5);
+
+    return {
+        open,
+        close,
+        high,
+        low
+    };
+}
+
+function resetMarket() {
+
+    data = [];
+
+    let price = 100;
+
+    let mode = document.getElementById("scenario").value;
+
+    for(let i=0;i<60;i++) {
+
+        let vol = 0.8;
+
+        if(mode === "compression" && i>35) {
+            vol = 0.2;
+        }
+
+        if(mode === "volatile") {
+            vol = 2;
+        }
+
+        let c = candle(price,vol);
+
+        data.push(c);
+
+        price = c.close;
+    }
+
+    history = [];
+
+    drawChart();
+
+    analyze();
+}
+
+function addCandles() {
+
+    let price = data[data.length-1].close;
+
+    let mode = document.getElementById("scenario").value;
+
+    let vol = mode === "volatile" ? 2 :
+              mode === "compression" ? .25 : .8;
+
+    for(let i=0;i<5;i++) {
+
+        let c = candle(price,vol);
+
+        data.push(c);
+
+        price = c.close;
+    }
+
+    if(data.length>100) {
+        data = data.slice(-100);
+    }
+
+    drawChart();
+
+    analyze();
+}
+
+function drawChart() {
+
+    let w = canvas.width;
+    let h = canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+
+    let max = Math.max(...data.map(x=>x.high));
+
+    let min = Math.min(...data.map(x=>x.low));
+
+    let padding = (max-min)*.1 || 1;
+
+    max += padding;
+    min -= padding;
+
+    function y(price) {
+        return h - 25 - ((price-min)/(max-min))*(h-50);
+    }
+
+    ctx.strokeStyle = "#26364f";
+
+    for(let i=1;i<6;i++) {
+
+        let yy = i*h/6;
+
+        ctx.beginPath();
+
+        ctx.moveTo(0,yy);
+
+        ctx.lineTo(w,yy);
+
+        ctx.stroke();
+    }
+
+    let width = w/data.length;
+
+    data.forEach((c,i)=>{
+
+        let x = i*width + width/2;
+
+        let green = c.close >= c.open;
+
+        let color = green ? "#43d6a0" : "#ff6b76";
+
+        ctx.strokeStyle = color;
+
+        ctx.fillStyle = color;
+
+        ctx.beginPath();
+
+        ctx.moveTo(x,y(c.high));
+
+        ctx.lineTo(x,y(c.low));
+
+        ctx.stroke();
+
+        let top = y(Math.max(c.open,c.close));
+
+        let bottom = y(Math.min(c.open,c.close));
+
+        ctx.fillRect(
+            x-width*.3,
+            top,
+            width*.6,
+            Math.max(2,bottom-top)
+        );
+
+    });
+
+}
+
+function analyze() {
+
+    let recent = data.slice(-10);
+
+    let previous = data.slice(-30,-10);
+
+    let recentHigh = Math.max(...recent.map(x=>x.high));
+
+    let recentLow = Math.min(...recent.map(x=>x.low));
+
+    let previousHigh = Math.max(...previous.map(x=>x.high));
+
+    let previousLow = Math.min(...previous.map(x=>x.low));
+
+    let recentRange = recentHigh-recentLow;
+
+    let previousRange = previousHigh-previousLow;
+
+    let last = data[data.length-1];
+
+    let status = "";
+
+    let description = "";
+
+    if(recentRange < previousRange*.55) {
+
+        status = "ضغط سعري";
+
+        description =
+        "النطاق الأخير أضيق بوضوح من النطاق السابق. هذا يعني انخفاض مدى الحركة في العينة الحالية.";
+
+    }
+
+    else if(recentRange > previousRange*1.4) {
+
+        status = "تذبذب مرتفع";
+
+        description =
+        "مدى الحركة الأخيرة أكبر من الفترة السابقة. السوق الافتراضي أصبح أكثر تقلباً.";
+
+    }
+
+    else {
+
+        status = "حركة عادية";
+
+        description =
+        "لا يوجد تغير واضح في مدى الحركة مقارنة بالفترة السابقة.";
+
+    }
+
+    let extra = "";
+
+    if(last.close > previousHigh) {
+
+        extra = "آخر إغلاق أعلى من أعلى النطاق المرجعي.";
+
+    }
+
+    else if(last.close < previousLow) {
+
+        extra = "آخر إغلاق أدنى من أدنى النطاق المرجعي.";
+
+    }
+
+    else {
+
+        extra = "آخر إغلاق ما زال داخل النطاق المرجعي.";
+
+    }
+
+    document.getElementById("candles").textContent = data.length;
+
+    document.getElementById("price").textContent =
+        last.close.toFixed(3);
+
+    document.getElementById("volatility").textContent =
+        recentRange.toFixed(3);
+
+    document.getElementById("market").textContent = status;
+
+    document.getElementById("analysis").innerHTML =
+        "<b>وصف النمط:</b> "+status+
+        "<br><b>التحليل:</b> "+description+
+        "<br><b>موقع الإغلاق:</b> "+extra;
+
+    history.unshift({
+
+        time:new Date().toLocaleTimeString("ar"),
+
+        status:status,
+
+        extra:extra
+
+    });
+
+    history = history.slice(0,15);
+
+    document.getElementById("history").innerHTML =
+        history.map(x=>`
+        <tr>
+            <td>${x.time}</td>
+            <td>${x.status}</td>
+            <td>${x.extra}</td>
+        </tr>
+        `).join("");
+
+}
+
+resetMarket();
+
+</script>
+
+</body>
+</html>
